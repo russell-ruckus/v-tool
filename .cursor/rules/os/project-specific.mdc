@@ -1,0 +1,53 @@
+---
+alwaysApply: false
+---
+### Directory Context Rules
+
+
+### Command Execution Protocol
+1. **Before running any command:**
+
+2. **Frontend Command Examples:**
+
+3. **Backend Command Examples:**
+
+4. **Python Version Specification:**
+
+5. **Directory Navigation:**
+
+# Environment Configuration Rules
+
+## Hidden .env File
+- There is a `.env` file in the project root directory that is hidden from the agent's view
+- This file contains sensitive environment variables and configuration settings
+- The agent should NOT attempt to read, modify, or reference this file directly
+- Instead, use the `env.template` file in the root directory as a reference for environment variable structure
+
+## Environment Variable Guidelines
+
+### When Working with Environment Variables:
+1. **Reference the template**: Always check `env.template` to understand the expected environment variable structure
+2. **Use template as guide**: The template shows the format and types of variables needed
+3. **Documentation**: Update `env.template` if new environment variables are added to the project
+4. **Security**: Never hardcode sensitive values or expose environment variables in code
+5. **Instructions**: When environment variables are needed, provide clear instructions to the user about:
+   - Which variables need to be set
+   - Where to set them (in the hidden .env file)
+   - How to copy from the template
+
+
+### Important Notes:
+- The agent cannot see the actual `.env` file contents
+- Provide clear user instructions when environment configuration is needed
+- Respect the hidden nature of the .env file for security purposes
+
+## Critical Rules
+- **NEVER** skip documentation consultation
+- **NEVER** mark tasks complete without proper testing
+- **NEVER** ignore project structure guidelines
+- **NEVER** implement UI without checking UI_UX_doc.md
+- **NEVER** fix errors without checking Bug_tracking.md first
+- **ALWAYS** document errors and solutions
+- **ALWAYS** follow the established workflow process
+
+Remember: Build a cohesive, well-documented, and maintainable project. Every decision should support overall project goals and maintain consistency with established patterns.
