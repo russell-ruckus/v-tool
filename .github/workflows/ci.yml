@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main, Foundation]
+  pull_request:
+    branches: [main, Foundation]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck --workspaces --if-present
+
+      - name: Lint
+        run: npm run lint --workspaces || true
+
+      - name: Test
+        run: npm test --workspaces --if-present
+
+      - name: Build
+        run: npm run -w apps/web build
+
