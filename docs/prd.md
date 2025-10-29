@@ -281,6 +281,8 @@ Example lock snippet
   "seed": { "fixed": 12345 }
 }
 
+
+
 ### Analytics (Instrumentation)
 - Post‑MVP event tracking for export, preset save/load, mode switches, instance counts, viewport selections, and seed changes.
 - Opt‑out switch; no PII; focus on KPIs like activation and time‑to‑first‑export.
@@ -292,6 +294,30 @@ Example lock snippet
 - Per‑instance color ramps, palettes, and style grouping.
 - URL‑based scene sharing and governed profiles for team/brand use.
 - Export optimization options (style grouping, quality slider).
+
+## Phase 2: True 3D (Post-MVP)
+
+### Camera & View Controls
+- Perspective projection with FOV control
+- Orbit controls (rotate 3D space around origin)
+- Maintain fixed viewport overlay; rotate world underneath
+
+### Spatial Depth
+- Instances have true Z-coordinates in 3D space
+- Depth control adjusts Z-spacing (near→far distance)
+- Perspective scaling from camera (replaces depth→scale mapping)
+- Optional occlusion/depth sorting
+
+### Object Rotation
+- Separate X/Y/Z rotation controls per instance
+- Fixed values or seeded ranges for each axis
+- Orientation follows path tangent (optional)
+
+### Advanced Paths
+- Quadratic/Cubic Bezier with control points
+- Cosine, parametric curves
+- Equal-arc-length sampling for uniform spacing
+- Path multiplier (N parallel paths)
 
 ## Checklist Results Report
 Pending. After your confirmation, we will run the PM checklist and populate results here.
