@@ -1,6 +1,11 @@
 import { Canvas } from './components/canvas/Canvas';
 import { ObjectPanel } from './components/panels/ObjectPanel';
 import { DistributionPanel } from './components/panels/DistributionPanel';
+import { TransformPanel } from './components/panels/TransformPanel';
+import { ViewPanel } from './components/panels/ViewPanel';
+import { ViewportPanel } from './components/panels/ViewportPanel';
+import { ExportPanel } from './components/panels/ExportPanel';
+import { PresetPanel } from './components/panels/PresetPanel';
 import { init } from './store/store';
 import type { Scene } from '@v-tool/shared';
 
@@ -12,31 +17,33 @@ const initialScene: Scene = {
   shape: { type: 'basic', shape: 'square' },
   distribution: {
     mode: 'path',
-    path: { type: 'linear', instances: 10 },
+    path: { type: 'linear', instances: 1, frequency: 1.0, amplitude: 50 },
     spacing: 'linear',
   },
   transform: {
+    depthRange: [0, 10],
+    scaleRange: [0.1, 10],
     rotation: { mode: 'fixed', value: 0 },
     sortByDepth: false,
   },
   style: {
-    fill: '#3b82f6',
-    stroke: '#1e40af',
-    strokeWidth: 1,
+    fill: '#333333',
+    stroke: '#666666',
+    strokeWidth: .1,
     background: '#ffffff',
   },
   view: {
     pan: { x: 0, y: 0 },
-    zoom: 1,
+    zoom: .5,
     overlayVisible: true,
   },
   viewport: {
     aspect: '16:9',
     orientation: 'landscape',
-    width: 800,
+    width: 640, // 80% of canvas viewBox width (800)
   },
   export: {
-    precision: 2,
+    precision: 5, // Maximum precision for best accuracy
     useSymbols: true,
     clipToViewport: true,
   },
@@ -56,4 +63,9 @@ if (!canvasRoot || !panelsRoot) {
   Canvas(canvasRoot);
   ObjectPanel(panelsRoot);
   DistributionPanel(panelsRoot);
+  TransformPanel(panelsRoot);
+  ViewPanel(panelsRoot);
+  ViewportPanel(panelsRoot);
+  ExportPanel(panelsRoot);
+  PresetPanel(panelsRoot);
 }

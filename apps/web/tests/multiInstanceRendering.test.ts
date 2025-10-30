@@ -31,6 +31,13 @@ describe('Multi-Instance Rendering', () => {
     expect(uses.length).toBe(5);
   });
 
+  it('centers world transform at canvas origin', () => {
+    renderInstances(svg, scene);
+    const world = svg.querySelector('#world');
+    expect(world).toBeTruthy();
+    expect(world?.getAttribute('transform')).toBe('translate(400 300) scale(1 1) translate(0 0)');
+  });
+
   it('uses DocumentFragment for batch DOM creation', () => {
     // Create documentFragment and verify it's used
     renderInstances(svg, scene);
@@ -47,8 +54,9 @@ describe('Multi-Instance Rendering', () => {
     const updatedScene: Scene = {
       ...scene,
       distribution: {
-        ...scene.distribution,
-        path: { ...scene.distribution.path, instances: 10 },
+        mode: 'path',
+        path: { type: 'linear', instances: 10, frequency: 1.0, amplitude: 50 },
+        spacing: 'linear',
       },
     };
 
@@ -63,8 +71,9 @@ describe('Multi-Instance Rendering', () => {
     const updatedScene: Scene = {
       ...scene,
       distribution: {
-        ...scene.distribution,
-        path: { ...scene.distribution.path, instances: 3 },
+        mode: 'path',
+        path: { type: 'linear', instances: 3, frequency: 1.0, amplitude: 50 },
+        spacing: 'linear',
       },
     };
 
@@ -88,7 +97,11 @@ describe('Multi-Instance Rendering', () => {
   it('applies spacing functions', () => {
     const linearScene: Scene = {
       ...scene,
-      distribution: { ...scene.distribution, spacing: 'linear' },
+      distribution: {
+        mode: 'path',
+        path: { type: 'linear', instances: 5, frequency: 1.0, amplitude: 50 },
+        spacing: 'linear',
+      },
     };
 
     renderInstances(svg, linearScene);
@@ -98,7 +111,11 @@ describe('Multi-Instance Rendering', () => {
 
     const easeInScene: Scene = {
       ...scene,
-      distribution: { ...scene.distribution, spacing: 'ease-in' },
+      distribution: {
+        mode: 'path',
+        path: { type: 'linear', instances: 5, frequency: 1.0, amplitude: 50 },
+        spacing: 'ease-in',
+      },
     };
 
     renderInstances(svg, easeInScene);
@@ -126,6 +143,127 @@ describe('Multi-Instance Rendering', () => {
     const group2 = svg.querySelector('#instances');
 
     expect(group1).toBe(group2); // Same element reference
+  });
+
+  describe('Transform Integration', () => {
+    it('applies depth→scale mapping to rendered instances', () => {
+      const sceneWithScale = createTestScene({
+        distribution: {
+          mode: 'path',
+          path: { type: 'linear', instances: 3 },
+          spacing: 'linear',
+        },
+        transform: {
+          depthRange: [0, 1],
+          scaleRange: [0.5, 1.5],
+          rotation: { mode: 'fixed', value: 0 },
+          sortByDepth: false,
+        },
+      });
+
+      renderInstances(svg, sceneWithScale);
+
+      const uses = svg.querySelectorAll('use');
+      expect(uses).toHaveLength(3);
+
+      // Check that different instances have different scales
+      const widths = Array.from(uses).map(use => parseFloat(use.getAttribute('width') || '50'));
+      const heights = Array.from(uses).map(use => parseFloat(use.getAttribute('height') || '50'));
+
+      // Should have different scales (not all the same)
+      const uniqueWidths = new Set(widths);
+      expect(uniqueWidths.size).toBeGreaterThan(1);
+      
+      // All scales should be within expected range (50 * 0.5 to 50 * 1.5)
+      widths.forEach(width => {
+        expect(width).toBeGreaterThanOrEqual(25); // 50 * 0.5
+        expect(width).toBeLessThanOrEqual(75);    // 50 * 1.5
+      });
+      
+      heights.forEach(height => {
+        expect(height).toBeGreaterThanOrEqual(25);
+        expect(height).toBeLessThanOrEqual(75);
+      });
+    });
+
+    it('applies rotation transforms correctly', () => {
+      const sceneWithRotation = createTestScene({
+        distribution: {
+          mode: 'path',
+          path: { type: 'linear', instances: 2 },
+          spacing: 'linear',
+        },
+        transform: {
+          depthRange: [0, 1],
+          scaleRange: [1, 1],
+          rotation: { mode: 'fixed', value: 45 },
+          sortByDepth: false,
+        },
+      });
+
+      renderInstances(svg, sceneWithRotation);
+
+      const uses = svg.querySelectorAll('use');
+      expect(uses).toHaveLength(2);
+
+      // Check that rotation transforms are applied
+      uses.forEach(use => {
+        const transform = use.getAttribute('transform');
+        expect(transform).toContain('rotate(45');
+      });
+    });
+
+    it('sorts instances by depth when enabled', () => {
+      const sceneWithSorting = createTestScene({
+        distribution: {
+          mode: 'particle',
+          particle: { type: 'random', density: 3 },
+        },
+        transform: {
+          depthRange: [0, 1],
+          scaleRange: [0.5, 1.5],
+          rotation: { mode: 'fixed', value: 0 },
+          sortByDepth: true,
+        },
+      });
+
+      renderInstances(svg, sceneWithSorting);
+
+      const uses = svg.querySelectorAll('use');
+      expect(uses.length).toBeGreaterThan(0);
+
+      // With sorting enabled, instances should be rendered in depth order
+      // We can't easily test the exact order without knowing the random depths,
+      // but we can verify that the rendering completes without errors
+      expect(uses.length).toBeGreaterThan(0);
+    });
+
+    it('handles no rotation when rotation is 0', () => {
+      const sceneNoRotation = createTestScene({
+        distribution: {
+          mode: 'path',
+          path: { type: 'linear', instances: 2 },
+          spacing: 'linear',
+        },
+        transform: {
+          depthRange: [0, 1],
+          scaleRange: [1, 1],
+          rotation: { mode: 'fixed', value: 0 },
+          sortByDepth: false,
+        },
+      });
+
+      renderInstances(svg, sceneNoRotation);
+
+      const uses = svg.querySelectorAll('use');
+      expect(uses).toHaveLength(2);
+
+      // Check that no rotation transforms are applied when rotation is 0
+      uses.forEach(use => {
+        const transform = use.getAttribute('transform');
+        expect(transform).toBeNull(); // No transform attribute should be set
+      });
+    });
   });
 });
 

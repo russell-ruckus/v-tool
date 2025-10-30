@@ -1,4 +1,5 @@
 ---
+description: Rules that address mistakes the LLMs make inside the project
 alwaysApply: false
 ---
 ### Directory Context Rules

@@ -3,6 +3,7 @@
  * Generates deterministic instance positions along paths
  */
 import type { PathDistribution, Instance } from '@v-tool/shared';
+import { sampleSinePath } from './sineSampler';
 
 /**
  * Sample instances along a linear path
@@ -25,9 +26,24 @@ export function sampleLinearPath(distribution: PathDistribution): Instance[] {
       x,
       y,
       rotation: 0,
+      depth: t, // Normalized position = depth
     });
   }
 
   return result;
 }
 
+/**
+ * Unified path sampler dispatcher
+ * Routes to appropriate sampler based on path type
+ */
+export function samplePath(distribution: PathDistribution): Instance[] {
+  if (distribution.path.type === 'linear') {
+    return sampleLinearPath(distribution);
+  } else if (distribution.path.type === 'sine') {
+    return sampleSinePath(distribution);
+  }
+
+  // Fallback to linear for safety
+  return sampleLinearPath(distribution);
+}
