@@ -1,4 +1,6 @@
 ---
+description: Writting style guide
+globs: *.md., *.txt
 alwaysApply: false
 ---
 ## Avoid LLM patterns

@@ -18,6 +18,8 @@ export function createTestScene(overrides?: Partial<Scene>): Scene {
       spacing: 'linear',
     },
     transform: {
+      depthRange: [0, 1],
+      scaleRange: [0.5, 1.5],
       rotation: { mode: 'fixed', value: 0 },
       sortByDepth: false,
     },

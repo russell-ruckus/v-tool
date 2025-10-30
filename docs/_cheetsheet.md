@@ -34,7 +34,7 @@ git init
 git add .
 git commit -m "Initial commit: project documentation and structure"
 
-git remote add origin https://github.com/russell-ruckus/nofi-weather-aura.git
+git remote add origin https://github.com/russell-ruckus/v-tool.git
 git push -u origin main
 
 ```
@@ -43,10 +43,18 @@ git push -u origin main
 
 ```
 
-git checkout -b <branch name>
+git checkout -b Foundation
 git branch
-git push -u origin <branch name>
+git push -u origin distribution-modes
 
 ```
 
+### to commmit changes 
 
+git add .
+git commit -m "description"
+git push
+
+### New branch / Switch branch
+
+git checkout -b distribution-modes

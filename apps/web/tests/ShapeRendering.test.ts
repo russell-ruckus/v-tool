@@ -10,7 +10,7 @@ describe('Shape Symbols', () => {
     const symbol = createSquareSymbol();
 
     expect(symbol.id).toBe('shape-square');
-    expect(symbol.getAttribute('viewBox')).toBe('-1 -1 2 2');
+    expect(symbol.getAttribute('viewBox')).toBe('-1.25 -1.25 2.5 2.5');
     expect(symbol.tagName.toLowerCase()).toBe('symbol');
 
     const rect = symbol.querySelector('rect');
@@ -25,7 +25,7 @@ describe('Shape Symbols', () => {
     const symbol = createCircleSymbol();
 
     expect(symbol.id).toBe('shape-circle');
-    expect(symbol.getAttribute('viewBox')).toBe('-1 -1 2 2');
+    expect(symbol.getAttribute('viewBox')).toBe('-1.25 -1.25 2.5 2.5');
     expect(symbol.tagName.toLowerCase()).toBe('symbol');
 
     const circle = symbol.querySelector('circle');
@@ -39,7 +39,7 @@ describe('Shape Symbols', () => {
     const symbol = createTriangleSymbol();
 
     expect(symbol.id).toBe('shape-triangle');
-    expect(symbol.getAttribute('viewBox')).toBe('-1 -1 2 2');
+    expect(symbol.getAttribute('viewBox')).toBe('-1.25 -1.25 2.5 2.5');
     expect(symbol.tagName.toLowerCase()).toBe('symbol');
 
     const polygon = symbol.querySelector('polygon');
@@ -52,9 +52,9 @@ describe('Shape Symbols', () => {
     const circle = createCircleSymbol();
     const triangle = createTriangleSymbol();
 
-    expect(square.getAttribute('viewBox')).toBe('-1 -1 2 2');
-    expect(circle.getAttribute('viewBox')).toBe('-1 -1 2 2');
-    expect(triangle.getAttribute('viewBox')).toBe('-1 -1 2 2');
+    expect(square.getAttribute('viewBox')).toBe('-1.25 -1.25 2.5 2.5');
+    expect(circle.getAttribute('viewBox')).toBe('-1.25 -1.25 2.5 2.5');
+    expect(triangle.getAttribute('viewBox')).toBe('-1.25 -1.25 2.5 2.5');
   });
 });
 

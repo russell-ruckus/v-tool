@@ -1,52 +1,113 @@
 /**
- * ObjectPanel component - shape selection controls
+ * ObjectPanel - shape selection and SVG upload
  */
 import { Pane } from 'tweakpane';
-import { getState, update, subscribe } from '../../store/store';
-import type { BasicShape } from '@v-tool/shared';
+import { getState, update } from '../../store/store';
+import type { BasicShape, ShapeSource } from '@v-tool/shared';
+import { validateSVG, sanitizeSVG, normalizeSVG, createSymbolFromSVG } from '../../services/svgUpload';
 
 export function ObjectPanel(root: HTMLElement) {
-  const pane = new Pane({
-    container: root,
-    title: 'Object',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }) as any; // Type workaround for Tweakpane 4.x
+  const pane = new Pane({ container: root, title: 'Object' }) as any; // tweakpane typing workaround
 
-  const state = getState();
-
-  // Initialize params from current state
+  const scene = getState();
   const params = {
-    shape: (state.shape.type === 'basic' ? state.shape.shape : 'square') as BasicShape,
+    shapeType: scene.shape.type,
+    basicShape: scene.shape.type === 'basic' ? scene.shape.shape : 'square',
+    uploadStatus: '' as string,
   };
 
-  // Shape selection dropdown
+  let refreshStatus: (() => void) | null = null;
+
+  // Shape type toggle
+  const shapeTypeBlade = pane
+    .addBlade({
+      view: 'list',
+      label: 'Shape Type',
+      options: [
+        { text: 'Basic', value: 'basic' },
+        { text: 'Uploaded', value: 'uploaded' },
+      ],
+      value: params.shapeType,
+    })
+    .on('change', (ev: { value: 'basic' | 'uploaded' }) => {
+      params.shapeType = ev.value;
+      params.uploadStatus = '';
+      refreshStatus?.();
+      if (ev.value === 'basic') {
+        update({ shape: { type: 'basic', shape: params.basicShape as BasicShape } as ShapeSource });
+      }
+      pane.refresh();
+    });
+
+  // Basic shape selector
   pane
     .addBlade({
       view: 'list',
-      label: 'Shape',
+      label: 'Basic Shape',
       options: [
         { text: 'Square', value: 'square' },
         { text: 'Circle', value: 'circle' },
         { text: 'Triangle', value: 'triangle' },
       ],
-      value: params.shape,
+      value: params.basicShape,
     })
     .on('change', (ev: { value: BasicShape }) => {
-      update({ shape: { type: 'basic', shape: ev.value } });
+      params.basicShape = ev.value;
+      if (params.shapeType === 'basic') {
+        update({ shape: { type: 'basic', shape: ev.value } as ShapeSource });
+      }
     });
 
-  // Subscribe to external state changes (if needed)
-  const unsub = subscribe((scene) => {
-    if (scene.shape.type === 'basic' && scene.shape.shape !== params.shape) {
-      params.shape = scene.shape.shape;
-      pane.refresh();
+  // Upload controls
+  const uploadFolder = pane.addFolder({ title: 'Upload', expanded: true });
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.svg,image/svg+xml';
+  fileInput.style.display = 'none';
+  root.appendChild(fileInput);
+
+  const uploadButton = uploadFolder.addButton({ title: 'Upload SVG' });
+  uploadButton.on('click', () => fileInput.click());
+
+  const statusBinding = uploadFolder.addBinding(params, 'uploadStatus', { label: 'Status' });
+  refreshStatus = () => statusBinding.refresh();
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    uploadButton.disabled = true;
+    params.uploadStatus = 'Processing...';
+    refreshStatus?.();
+    try {
+      const text = await file.text();
+      const validation = validateSVG(text);
+      if (!validation.valid) {
+        params.uploadStatus = `Rejected: ${validation.reason}`;
+        refreshStatus?.();
+        return;
+      }
+      const sanitized = sanitizeSVG(text);
+      const normalized = normalizeSVG(sanitized);
+      const { symbolId, viewBox, content } = createSymbolFromSVG(normalized);
+      // Update scene shape to uploaded
+      params.shapeType = 'uploaded';
+      update({ shape: { type: 'uploaded', symbolId, viewBox, content } as ShapeSource });
+      shapeTypeBlade.refresh();
+      // Store symbol in DOM defs on next Canvas render
+      params.uploadStatus = `${file.name} uploaded`;
+      refreshStatus?.();
+    } catch (e) {
+      params.uploadStatus = 'Upload failed';
+      refreshStatus?.();
+    } finally {
+      fileInput.value = '';
+      uploadButton.disabled = false;
     }
   });
 
-  // Return cleanup function
+  // Cleanup
   return () => {
-    unsub();
     pane.dispose();
+    if (fileInput.parentNode === root) root.removeChild(fileInput);
   };
 }
-
